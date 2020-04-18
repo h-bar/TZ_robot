@@ -194,8 +194,8 @@ static void pwm_set_width(int32_t pwm_num, uint32_t width) {
 }
 
 static void pwm_enable(int32_t pwm_num) {
-	if (pwm_num == 0) pwm->CTL |= 0x1;
-	else pwm->CTL |= 0x100;
+	if (pwm_num == 0) pwm->CTL |= 0x81;
+	else pwm->CTL |= 0x8100;
 
 	pwm->STA |= 0x10;
 }
