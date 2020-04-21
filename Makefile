@@ -1,3 +1,3 @@
 all: motor led
-	gcc -o motor motor.c
-	gcc -o led led.c
+	gcc -o motor.out motor.c
+	gcc -o led.out led.c
