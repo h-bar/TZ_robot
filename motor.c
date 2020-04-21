@@ -7,15 +7,15 @@
 // Do not use Pin 18 for anything other than PWM0
 #define PWA                 0     // On Pin18
 
-#define PHOTORESISTOR_PIN_L 24
-#define PHOTORESISTOR_PIN_R 25
+#define PHOTORESISTOR_PIN_L 17
+#define PHOTORESISTOR_PIN_R 16
 
-#define AI1                 7
-#define AI2                 8
+#define AI1                 26
+#define AI2                 19
 
 #define FREQ                50
 #define STANDBY             25
-#define STAIGHT_DC          25
+#define STRAIGHT_DC         50
 #define TURNING_DC          100
 
 
@@ -40,18 +40,31 @@ int main() {
   motor1_init();
   photo_resistor_init();
 
-  gpio_set_dir(23, gpio_out);
-	gpio_set_level(23, gpio_high);
+  gpio_set_dir(25, gpio_out);
+	gpio_set_level(25, gpio_high);
 
   while (1) {
     int l = gpio_get_level( PHOTORESISTOR_PIN_L );
     int r = gpio_get_level( PHOTORESISTOR_PIN_R );
+    /*
     if ( l == gpio_high || r == gpio_high) {
       printf("Got a high\n");
       forward(&motor1, 0 );
     } else {
       printf("Got lows\n");
       stop(&motor1, TURNING_DC);
+    }
+    */
+    if ( l == gpio_low ) {
+     if ( r == gpio_low ) {
+       forward( &motor1, STRAIGHT_DC );
+     }
+     else {
+       forward( &motor1, TURNING_DC );
+     }
+    }
+	  else if ( l == 1 ) {
+      stop( &motor1, 0 );
     }
   }
 }
