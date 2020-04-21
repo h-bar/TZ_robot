@@ -15,7 +15,7 @@
 
 #define FREQ                50
 #define STANDBY             25
-#define STRAIGHT_DC         25
+#define STRAIGHT_DC         50
 #define TURNING_DC          100
 
 
