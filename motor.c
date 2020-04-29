@@ -3,6 +3,7 @@
 
 #include "map_dev.c"
 #include <unistd.h>
+#include <time.h>
 
 // Do not use Pin 18 for anything other than PWM0
 #define PWA                 0     // On Pin18
@@ -43,28 +44,71 @@ int main() {
   gpio_set_dir(25, gpio_out);
 	gpio_set_level(25, gpio_high);
 
+  struct timespec start, end;
+  double latency[10];
+  double avg_latency = 0;
+  double throughput[10];
+  double avg_throughput = 0;
+
   while (1) {
-    int l = gpio_get_level( PHOTORESISTOR_PIN_L );
-    int r = gpio_get_level( PHOTORESISTOR_PIN_R );
-    /*
-    if ( l == gpio_high || r == gpio_high) {
-      printf("Got a high\n");
-      forward(&motor1, 0 );
-    } else {
-      printf("Got lows\n");
-      stop(&motor1, TURNING_DC);
+    clock_gettime( CLOCK_MONOTONIC, &start );
+    for ( int k = 0; k < 1000; k = k + 100 ){             // read 100, 200, 300, ... , 900 data and measure timing respectively 
+
+      int l = gpio_get_level( PHOTORESISTOR_PIN_L );
+      int r = gpio_get_level( PHOTORESISTOR_PIN_R );
+
+      if ( l == gpio_low ) {
+       if ( r == gpio_low ) {
+         forward( &motor1, STRAIGHT_DC );
+       }
+       else {
+         forward( &motor1, TURNING_DC );
+       }
+      }
+	    else if ( l == 1 ) {
+        stop( &motor1, 0 );
+      }
+
+      clock_gettime( CLOCK_MONOTONIC, &end );
+      double time;
+      time = ( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec );
+      latency[k/100] = time;
     }
-    */
-    if ( l == gpio_low ) {
-     if ( r == gpio_low ) {
-       forward( &motor1, STRAIGHT_DC );
-     }
-     else {
-       forward( &motor1, TURNING_DC );
-     }
+
+    for ( int i = 0; i < 10; i ++ ) {
+      throughput[i] = 100 * i / latency[i];
+      avg_throughput = avg_throughput + throughput[i];
+      avg_latency = avg_latency + latency[i];
     }
-	  else if ( l == 1 ) {
-      stop( &motor1, 0 );
-    }
+
+    avg_throughput = avg_throughput / 10;
+    avg_latency = avg_latency / 10;
+
+    printf( "the average latency is: %f ns\n", avg_latency );
+    printf( "the average throuput is: %f op/s\n", avg_throughput );
+    break;
+
+    // int l = gpio_get_level( PHOTORESISTOR_PIN_L );
+    // int r = gpio_get_level( PHOTORESISTOR_PIN_R );
+    // /*
+    // if ( l == gpio_high || r == gpio_high) {
+    //   printf("Got a high\n");
+    //   forward(&motor1, 0 );
+    // } else {
+    //   printf("Got lows\n");
+    //   stop(&motor1, TURNING_DC);
+    // }
+    // */
+    // if ( l == gpio_low ) {
+    //  if ( r == gpio_low ) {
+    //    forward( &motor1, STRAIGHT_DC );
+    //  }
+    //  else {
+    //    forward( &motor1, TURNING_DC );
+    //  }
+    // }
+	  // else if ( l == 1 ) {
+    //   stop( &motor1, 0 );
+    // }
   }
 }
